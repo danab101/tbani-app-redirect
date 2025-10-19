@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Redirecting to Tbani App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        function getPostIdFromPath() {
+            const path = window.location.pathname;
+            const segments = path.split('/').filter(segment => segment);
+            return segments.length > 1 ? segments[1] : null;
+        }
+
+        function redirectToApp() {
+            const postId = getPostIdFromPath();
+            
+            if (!postId) {
+                // No post ID found, redirect to app store
+                redirectToAppStore();
+                return;
+            }
+
+            // Try to open the app with deep link
+            const appDeepLink = `tbani://posts/${postId}`;
+            window.location.href = appDeepLink;
+            
+            // If app not installed, redirect to app store after delay
+            setTimeout(() => {
+                redirectToAppStore();
+            }, 1000);
+        }
+        
+        function redirectToAppStore() {
+            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                window.location.href = 'https://apps.apple.com/sa/app/tbani-%D8%AA%D8%A8%D9%86%D9%8A/id6751329027';
+            } else if (/Android/.test(navigator.userAgent)) {
+                window.location.href = 'https://play.google.com/store/apps/details?id=com.yourcompany.tbani';
+            } else {
+                // Desktop fallback - redirect to your website or app store
+                window.location.href = 'https://apps.apple.com/sa/app/tbani-%D8%AA%D8%A8%D9%86%D9%8A/id6751329027';
+            }
+        }
+        
+        window.onload = redirectToApp;
+    </script>
+</head>
+<body>
+    <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+        <h2>Redirecting to Tbani App...</h2>
+        <p>Please wait while we open the app.</p>
+    </div>
+</body>
+</html>
