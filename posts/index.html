@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Opening Tbani...</title>
+  <script>
+    function openApp() {
+      // Extract post ID from the URL
+      const pathParts = window.location.pathname.split('/');
+      const postId = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+      const appLink = `tbani://posts/${postId}`;
+
+      // Try to open app
+      const now = Date.now();
+      window.location = appLink;
+
+      // Redirect to store if app not opened
+      setTimeout(function () {
+        if (Date.now() - now < 2000) {
+          const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+          if (/android/i.test(userAgent)) {
+            window.location.href = "https://play.google.com/store/apps/details?id=com.yourcompany.tbani";
+          } else if (/iPad|iPhone|iPod/.test(userAgent)) {
+            window.location.href = "https://apps.apple.com/sa/app/tbani-%D8%AA%D8%A8%D9%86%D9%8A/id6751329027";
+          } else {
+            window.location.href = "https://tbani.app"; // fallback web site
+          }
+        }
+      }, 1500);
+    }
+    window.onload = openApp;
+  </script>
+</head>
+<body>
+  <p>Opening your Tbani post...</p>
+</body>
+</html>
