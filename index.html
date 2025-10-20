@@ -7,24 +7,34 @@
         function getPostIdFromPath() {
             const path = window.location.pathname;
             const segments = path.split('/').filter(segment => segment);
-            return segments.length > 1 ? segments[1] : null;
+            console.log('Path segments:', segments);
+            
+            // Expected URL: /tbani-app-redirect/posts/POST_ID
+            // segments would be: ['tbani-app-redirect', 'posts', 'POST_ID']
+            if (segments.length >= 3 && segments[0] === 'tbani-app-redirect' && segments[1] === 'posts') {
+                return segments[2];
+            }
+            return null;
         }
 
         function redirectToApp() {
             const postId = getPostIdFromPath();
+            console.log('Extracted postId:', postId);
             
             if (!postId) {
-                // No post ID found, redirect to app store
+                console.log('No post ID found, redirecting to app store');
                 redirectToAppStore();
                 return;
             }
 
             // Try to open the app with deep link
             const appDeepLink = `tbani://posts/${postId}`;
+            console.log('Opening app with deep link:', appDeepLink);
             window.location.href = appDeepLink;
             
             // If app not installed, redirect to app store after delay
             setTimeout(() => {
+                console.log('App not opened, redirecting to app store');
                 redirectToAppStore();
             }, 1000);
         }
@@ -35,7 +45,6 @@
             } else if (/Android/.test(navigator.userAgent)) {
                 window.location.href = 'https://play.google.com/store/apps/details?id=com.yourcompany.tbani';
             } else {
-                // Desktop fallback - redirect to your website or app store
                 window.location.href = 'https://apps.apple.com/sa/app/tbani-%D8%AA%D8%A8%D9%86%D9%8A/id6751329027';
             }
         }
