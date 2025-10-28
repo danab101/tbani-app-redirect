@@ -9,11 +9,17 @@
             const segments = path.split('/').filter(segment => segment);
             console.log('Path segments:', segments);
             
-            // Expected URL: /tbani-app-redirect/posts/POST_ID
-            // segments would be: ['tbani-app-redirect', 'posts', 'POST_ID']
+            // Your URL structure: /tbani/posts/POST_ID
+            // segments would be: ['tbani', 'posts', 'POST_ID']
             if (segments.length >= 3 && segments[0] === 'tbani' && segments[1] === 'posts') {
                 return segments[2];
             }
+            
+            // Also handle case where it might be just /posts/POST_ID
+            if (segments.length >= 2 && segments[0] === 'posts') {
+                return segments[1];
+            }
+            
             return null;
         }
 
@@ -30,13 +36,25 @@
             // Try to open the app with deep link
             const appDeepLink = `tbani://posts/${postId}`;
             console.log('Opening app with deep link:', appDeepLink);
-            window.location.href = appDeepLink;
             
-            // If app not installed, redirect to app store after delay
+            // Use iframe method for better iOS compatibility
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = appDeepLink;
+            document.body.appendChild(iframe);
+            
+            // Set timeout to redirect to app store
+            let appOpened = false;
+            window.onblur = function() {
+                appOpened = true;
+            };
+            
             setTimeout(() => {
-                console.log('App not opened, redirecting to app store');
-                redirectToAppStore();
-            }, 1000);
+                if (!appOpened) {
+                    console.log('App not opened, redirecting to app store');
+                    redirectToAppStore();
+                }
+            }, 1500);
         }
         
         function redirectToAppStore() {
