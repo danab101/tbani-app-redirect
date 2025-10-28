@@ -4,65 +4,76 @@
     <title>Redirecting to Tbani App</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
-        function getPostIdFromPath() {
-            const path = window.location.pathname;
-            const segments = path.split('/').filter(segment => segment);
-            console.log('Path segments:', segments);
-            
-            // Your URL structure: /tbani/posts/POST_ID
-            if (segments.length >= 3 && segments[0] === 'tbani' && segments[1] === 'posts') {
-                return segments[2];
-            }
-            
-            // Also handle case where it might be just /posts/POST_ID
-            if (segments.length >= 2 && segments[0] === 'posts') {
-                return segments[1];
-            }
-            
-            return null;
-        }
-
         function redirectToApp() {
-            const postId = getPostIdFromPath();
-            console.log('Extracted postId:', postId);
+            // Get the full path and extract post ID
+            const path = window.location.pathname;
+            console.log('Full path:', path);
             
-            if (!postId) {
-                console.log('No post ID found, redirecting to app store');
-                redirectToAppStore();
-                return;
+            // Simple extraction - look for /posts/ followed by ID
+            const postMatch = path.match(/\/posts\/([^\/]+)/);
+            const postId = postMatch ? postMatch[1] : null;
+            console.log('Post ID:', postId);
+            
+            if (postId) {
+                // Set a flag to know if app opened successfully
+                let appOpened = false;
+                
+                // Listen for page hide event (when app opens)
+                window.addEventListener('pagehide', function() {
+                    appOpened = true;
+                    console.log('App opened successfully - page is hiding');
+                });
+                
+                // Listen for visibility change
+                document.addEventListener('visibilitychange', function() {
+                    if (document.hidden) {
+                        appOpened = true;
+                        console.log('App opened successfully - page is hidden');
+                    }
+                });
+                
+                // Try to open the app directly
+                const appLink = `tbani://posts/${postId}`;
+                console.log('Trying to open:', appLink);
+                window.location.href = appLink;
+                
+                // Fallback to app store only if app didn't open
+                setTimeout(() => {
+                    if (!appOpened) {
+                        console.log('App not found, redirecting to store');
+                        redirectToStore();
+                    } else {
+                        console.log('App opened successfully, no store redirect needed');
+                    }
+                }, 1000);
+            } else {
+                // No post ID found, go directly to app store
+                console.log('No post ID, going to store');
+                redirectToStore();
             }
-
-            // Try to open the app with deep link (simpler approach)
-            const appDeepLink = `tbani://posts/${postId}`;
-            console.log('Opening app with deep link:', appDeepLink);
-            
-            // Direct approach - try to open app first
-            window.location.href = appDeepLink;
-            
-            // If app not installed, redirect to app store after delay
-            setTimeout(() => {
-                console.log('App not opened, redirecting to app store');
-                redirectToAppStore();
-            }, 1000);
         }
         
-        function redirectToAppStore() {
-            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        function redirectToStore() {
+            const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+            const isAndroid = /Android/.test(navigator.userAgent);
+            
+            if (isIOS) {
                 window.location.href = 'https://apps.apple.com/sa/app/tbani-%D8%AA%D8%A8%D9%86%D9%8A/id6751329027';
-            } else if (/Android/.test(navigator.userAgent)) {
+            } else if (isAndroid) {
                 window.location.href = 'https://play.google.com/store/apps/details?id=com.yourcompany.tbani';
             } else {
                 window.location.href = 'https://apps.apple.com/sa/app/tbani-%D8%AA%D8%A8%D9%86%D9%8A/id6751329027';
             }
         }
         
+        // Start redirect when page loads
         window.onload = redirectToApp;
     </script>
 </head>
 <body>
     <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
-        <h2>Redirecting to Tbani App...</h2>
-        <p>Please wait while we open the app.</p>
+        <h2>Opening Tbani App...</h2>
+        <p>Please wait while we redirect you.</p>
     </div>
 </body>
 </html>
