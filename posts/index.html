@@ -7,53 +7,60 @@
   <script>
     function openApp() {
       // Extract post ID from the URL path
-      // Expected URL: /tbani-app-redirect/posts/POST_ID
-      const pathParts = window.location.pathname.split('/').filter(part => part);
+      // Expected URL: /tbani/posts/POST_ID or /posts/POST_ID
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
       console.log('Path parts:', pathParts);
-      
+
       let postId = null;
-      if (pathParts.length >= 3 && pathParts[0] === 'tbani' && pathParts[1] === 'posts') {
-        postId = pathParts[2];
+      // Support both /tbani/posts/:id and /posts/:id
+      const postsIndex = pathParts.indexOf('posts');
+      if (postsIndex !== -1 && pathParts.length > postsIndex + 1) {
+        postId = pathParts[postsIndex + 1];
       }
-      
+
       console.log('Extracted postId:', postId);
 
-      if (!postId) {
-        console.log('No post ID found');
-        redirectToStore();
-        return;
-      }
+      // Construct links
+      const appLink = postId ? `tbani://posts/${postId}` : 'tbani://';
+      const storeIOS = 'https://apps.apple.com/sa/app/tbani-%D8%AA%D8%A8%D9%86%D9%8A/id6751329027';
+      const storeAndroid = 'https://play.google.com/store/apps/details?id=com.yourcompany.tbani';
 
-      // Try to open app
-      const appLink = `tbani://posts/${postId}`;
-      console.log('Opening app with:', appLink);
-      const now = Date.now();
-      window.location = appLink;
+      const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+      const isAndroid = /Android/.test(navigator.userAgent);
 
-      // Redirect to store if app not opened
-      setTimeout(function () {
-        if (Date.now() - now < 2000) {
-          console.log('App not opened, redirecting to store');
-          redirectToStore();
+      const start = Date.now();
+      let hidden = false;
+
+      // Detect when the app opens (browser loses focus or becomes hidden)
+      window.addEventListener('blur', () => hidden = true);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) hidden = true;
+      });
+
+      console.log('Opening app link:', appLink);
+      window.location.href = appLink;
+
+      // Wait and redirect to store only if app didn't open
+      setTimeout(() => {
+        const elapsed = Date.now() - start;
+        if (!hidden && elapsed < 2000) {
+          console.log('App did not open, redirecting to store');
+          if (isIOS) window.location.href = storeIOS;
+          else if (isAndroid) window.location.href = storeAndroid;
+          else window.location.href = storeIOS;
+        } else {
+          console.log('App opened successfully or user left page');
         }
-      }, 1500);
-    }
-
-    function redirectToStore() {
-      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-      if (/android/i.test(userAgent)) {
-        window.location.href = "https://play.google.com/store/apps/details?id=com.yourcompany.tbani";
-      } else if (/iPad|iPhone|iPod/.test(userAgent)) {
-        window.location.href = "https://apps.apple.com/sa/app/tbani-%D8%AA%D8%A8%D9%86%D9%8A/id6751329027";
-      } else {
-        window.location.href = "https://apps.apple.com/sa/app/tbani-%D8%AA%D8%A8%D9%86%D9%8A/id6751329027";
-      }
+      }, 1800);
     }
 
     window.onload = openApp;
   </script>
 </head>
 <body>
-  <p>Opening your Tbani post...</p>
+  <div style="text-align: center; padding: 40px; font-family: Arial, sans-serif;">
+    <h2>Opening Tbani App...</h2>
+    <p>If the app doesn’t open automatically, please check your App Store or Play Store.</p>
+  </div>
 </body>
 </html>
